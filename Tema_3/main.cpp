@@ -21,7 +21,7 @@ int main() {
     cin >> n;
 
     float scores[5];
-    Student *students = new Student[5];
+    Student *students = new Student[n];
 
     cout << "\tEnter grades: ";
     cout << endl;
@@ -44,7 +44,11 @@ int main() {
             count  = i;
     }
 
-    cout << "\nThe student " << count << " has greater scores than Kristen ";
+    if(count == 0)
+        cout << "Kristen has the higher score!";
+    else
+        cout << "\nThe student " << count << " has the best score";
+
 
     delete[] students;
     return 0;
