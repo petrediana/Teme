@@ -25,9 +25,20 @@ public:
     bool operator ==(const Array arr);
     bool operator >(const Array arr);
     bool operator <(const Array arr);
+    bool operator !();
 
     Array operator -(float number);
     Array operator +(float number);
+
+    Array &operator ++();
+    Array &operator ++(int);
+
+    Array &operator --();
+    Array &operator --(int);
+
+    explicit operator double();
+
+
 };
 
 
@@ -39,6 +50,7 @@ int main(){
     Array c(2, vec);
 
     Array b(4, vec);
+    Array d;
     //cout << a;
 
     //a = b;
@@ -64,8 +76,22 @@ int main(){
    //c = a + 10;
     //cout << c;
 
-    c = a - 10;
-    cout << c;
+    //c = a - 10;
+    //cout << c;
+
+    //cout << !d;
+    //cout << a;
+    //++ a;
+
+    //cout << a ++;
+    //cout << a;
+
+    //cout << a;
+    //-- a;
+    //cout << a;
+    //cout << (a--);
+    //cout << a;
+
 
     return 0;
 }
@@ -190,6 +216,13 @@ bool Array ::operator <(const Array arr){
         return false;
 }
 
+bool Array ::operator !(){
+    if(this -> no_of_elements < 0)
+        return true;
+    else
+        return false;
+}
+
 Array Array ::operator -(float number){
     for(int i = 0; i < this -> no_of_elements; i++)
         this -> arr[i] -= number;
@@ -204,4 +237,39 @@ Array Array ::operator +(float number){
 
     cout << "\n\tOperator + ";
     return *this;
+}
+
+Array &Array ::operator++() {
+    for (int i = 0; i < this->no_of_elements; i++)
+        this->arr[i]++;
+    return *this;
+}
+
+Array &Array ::operator++(int){
+    Array copie = *this;
+
+    for (int i = 0; i < this->no_of_elements; i++)
+        this->arr[i]++;
+
+    return copie;
+}
+
+Array &Array ::operator --(){
+    for (int i = 0; i < this->no_of_elements; i++)
+        this->arr[i] --;
+
+    return *this;
+}
+
+Array &Array ::operator--(int){
+    Array copie = *this;
+
+    for (int i = 0; i < this->no_of_elements; i++)
+        this->arr[i]--;
+
+    return copie;
+}
+
+Array ::operator double(){
+    return this -> no_of_elements;
 }
