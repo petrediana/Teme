@@ -1,0 +1,131 @@
+// ConsoleApplication2.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include "pch.h"
+#include <iostream>
+#include <cstring>
+#include <string>
+using namespace std;
+
+class Obiect {
+private:
+	string nume1;
+	char *nume2;
+public:
+	Obiect();
+	Obiect(string v_nume1, char *v_nume2);
+	Obiect(const Obiect &copie);
+	~Obiect();
+
+	friend ostream &operator<<(ostream &out, Obiect &obiect);
+	friend istream &operator>>(istream &in, Obiect &obiect);
+	bool operator ==(Obiect obiect);
+	bool operator <(Obiect obiect);
+	bool operator >(Obiect obiect);
+	explicit operator int();
+};
+
+
+int main()
+{
+	Obiect o1;
+	cout << o1;
+	
+	char n2[] = "nume2char";
+	Obiect o2("Nume1", n2);
+	cout << o2;
+
+	Obiect o3;
+	cin >> o3;
+	cout << o3;
+
+	cout << boolalpha;
+	cout << (o2 == o3) << endl;
+	cout << (o2 > o3) << endl;
+	cout << (o2 < o3) << endl;
+
+	cout << (int)o3;
+
+	return 0;
+}
+
+Obiect::Obiect() {
+	nume1 = "Anonim1";
+	this->nume2 = new char[strlen("Anonim2") + 1];
+	strcpy(this->nume2, "Anonim2");
+}
+
+Obiect::Obiect(string v_nume1, char *v_nume2) {
+	if (v_nume1.length() > 0)
+		this->nume1 = v_nume1;
+	
+	this->nume2 = new char[strlen(v_nume2) + 1];
+	if (v_nume2 != NULL)
+		strcpy(this->nume2, v_nume2);
+}
+
+Obiect::Obiect(const Obiect &copie) {
+	if (copie.nume1.length() > 0)
+		this->nume1 = copie.nume1;
+
+	this->nume2 = new char[strlen(copie.nume2) + 1];
+	if (copie.nume2 != NULL)
+		strcpy(this->nume2, copie.nume2);
+}
+
+Obiect::~Obiect() {
+	if (this->nume2 != NULL)
+		delete[] this->nume2;
+}
+
+ostream &operator<<(ostream &out, Obiect &obiect) {
+	out << "\n\n\tAfisare obiect:";
+	out << "\nNumele cu string: " << obiect.nume1;
+	out << "\nNumele cu char*: " << obiect.nume2;
+	out << "\n";
+	return out;
+}
+
+istream &operator>>(istream &in, Obiect &obiect) {
+	cout << "\n\tCitire obiect:";
+
+	cout << "\nCitire nume string: ";
+	char buf1[50], buf2[50];
+	in.getline(buf1, 50);
+	obiect.nume1 = buf1;
+
+	cout << "Citire nume char*: ";
+	in.getline(buf2, 50);
+
+	if (obiect.nume2 != NULL)
+		delete[] obiect.nume2;
+	
+	obiect.nume2 = new char[strlen(buf2) + 1];
+	strcpy(obiect.nume2, buf2);
+
+	return in;
+
+}
+
+bool Obiect::operator==(Obiect obiect) {
+	if (strcmp(this->nume2, obiect.nume2) == 0) {
+		if (this->nume1 == obiect.nume1)
+			return true;
+		else
+			return false;
+	}
+	return false;		
+
+}
+
+bool Obiect::operator>(Obiect obiect) {
+	return (this->nume1.length() > obiect.nume1.length());
+}
+
+bool Obiect::operator<(Obiect obiect) {
+	return (this->nume1.length() < obiect.nume1.length());
+}
+
+Obiect::operator int() {
+	return (this->nume1.length() + strlen(this->nume2));
+}
