@@ -1,0 +1,65 @@
+Cerintele sunt urmatoarele: 
+
+Cerinta 1:
+
+Pentru clasa alocata sa se implementeze urmatoarele:  
+
+	a. Sa se defineasca cel putin 5 atribute ale clasei.
+
+	b. Cel putin un atribut al clasei sa fie constant.
+
+	c. Cel putin un atribut al clasei sa fie float.
+
+	d. Cel putin un atribut al clasei sa fie alocat dinamic.  
+
+	e. Sa se defineasca constructorul default.
+
+	f. Sa se defineasca constructorul cu toti parametrii. 
+
+	g. Sa se defineasca constructorul cu valori implicite.
+
+	h. Sa se defineasca constructorul de copiere.
+
+	i. Sa se defineasca pentru fiecare atribut al clasei metodele get si set.
+
+	j. Sa se creeze o metoda de afisare a unui obiect la consola.
+
+	k. In functia main, sa se creeze un test pentru fiecare functie membra a clasei.
+
+	l. Functia main sa ruleze fara erori de compilare.
+
+	m. In functia main, sa se initializeze un vector al clasei alocat dinamic.
+
+	n. In functia main, sa se parcurga vectorului de la punctul anterior si sa se calculeze media geometrica a atributului de tip float.
+
+
+
+Cerinta 2: 
+
+Pentru aceeasi clasa sa se implementez urmatoarele:
+
+	a. operator = 
+
+	b. supraincaracare << sau >> (cel putin unul dintre acestia)
+
+	c. getter si setter
+
+	d. supraincarcarea operatorilor: [], ++ (pre si post), --(pre si post), +=. <,>, ==, >=, <=, !, (), cast, +, - 
+
+
+
+Cerinta 3: 
+
+Plecand de la clasa alocata, sa se utilizeze conceptele de mostenirie, derivare, abstractizare pentru a se implementa urmatoarele: 
+
+	a. Transformati clasa alocata in clasa abstracta.
+
+	b. Trebuie sa definiti cel putin o interfata.
+
+	c. Trebuie sa definiti cel putin 2 clase care sa derive din clasa abstracta definita la punctul 1 si sa implementeze interfata de la punctul 2.
+
+	d. Sa se definesca o noua clasa care sa gestioneze un vector alocat dinamic de tipul clasei abstracte de la punctul  1.
+
+	e. Modificatorul de acces al atributelor clasei abstracte sa fie de tip protected.
+
+	f. Modificatorul de acces al atributelor claselor concrete sa fie de tip private.
