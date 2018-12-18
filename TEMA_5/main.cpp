@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include <cmath>
 
 using namespace std;
 
@@ -19,10 +18,8 @@ public:
     Factura(const Factura &copie);
     ~Factura();
 
-    virtual void afisare();
-    virtual void calculTVA() = 0;
-
-    float mediaGeometrica();
+    void afisare();
+    //virtual void calcul_cu_TVA() = 0;
 
     int getID();
     string getDEN();
@@ -55,32 +52,17 @@ public:
     explicit operator double();
 };
 
-class FElectronica : public Factura{
+class FacturaElectronica : public Factura{
 private:
     string metoda_plata;
 public:
-    FElectronica();
-    FElectronica(string metoda_plata, int id, string denumire, unsigned int cantitate, float *pret, bool emis);
-    FElectronica(const FElectronica &copie);
-    ~FElectronica();
+    FacturaElectronica();
+    FacturaElectronica(string metoda_plata, int id, string denumire, unsigned int cantitate, float *pret, bool emis);
+    FacturaElectronica(const FacturaElectronica &copie);
+    ~FacturaElectronica();
 
-    void afisare();
-
-};
-
-class FacturaTVA : public FElectronica{
-public:
-    FacturaTVA();
-    FacturaTVA(string metoda_plata, int id, string denumire, unsigned int cantitate, float *pret, bool emis);
-    ~FacturaTVA();
-    FacturaTVA(const FacturaTVA &copie);
-
-    void calculTVA();
-};
-
-class Gestiune_facturi{
-private:
-    Factura *f;
+    friend ostream &operator<<(ostream &out, FacturaElectronica &fe);
+    void calcul_cu_TVA();
 };
 
 int main(){
@@ -108,7 +90,7 @@ int main(){
 
     /*Factura *facturi;
     int nrf;
-   // float suma = 0;
+    float suma = 0;
     cout << "\n\n\nCate facturi?: ";
     cin >> nrf;
 
@@ -116,9 +98,11 @@ int main(){
     for(int i = 0; i < nrf; i++){
         cin >> facturi[i];
 
-        cout << "\nPentru factura " << i + 1 << " media geometrica a atributelor de tip float este: " << facturi[i].mediaGeometrica();
-    }*/
-
+        for(unsigned int j = 0; j < facturi[i].getCANT(); j++)
+            suma += facturi[i].getPRET()[j];
+    }
+    cout << "\n\nSuma elementelor de tip float: " << suma;
+*/
     Factura f3;
     f3 = f2;
 
@@ -159,19 +143,11 @@ int main(){
     double cant = (double)f3;
     cout << "\nCantitate: " << cant;
 
-    FElectronica fe1;
-    fe1.afisare();
+    FacturaElectronica fe1;
+    cout << fe1;
 
-    char mp[] = "Cu cardul";
-    char denfe[] = "Plata servicii";
-    FElectronica fe2(mp, 5, denfe, 4, pr, 1);
-    fe2.afisare();
-
-    FacturaTVA fe2tva(mp, 5, denfe, 4, pr, 1);
-    fe2tva.calculTVA();
-    cout << "\n\tPreturi dupa impunerea TVA: ";
-    for(unsigned int i = 0; i < fe2tva.getCANT(); i++)
-        cout << fe2tva.getPRET()[i];
+    FacturaElectronica fe2("Cu cardul", 10, "Achitare servicii", 4, pr, 1);
+    cout << fe2;
 
     //delete facturi;
     return 0;
@@ -212,7 +188,7 @@ Factura::~Factura() {
 }
 
 void Factura::afisare() {
-    cout << "\n\n\tMetoda de afisare Facatura parinte:";
+    cout << "\n\n\tMetoda de afisare obiect:";
 
     cout << "\nId: " << this -> id;
     cout << "\nDenumire: " << this -> denumire_produs;
@@ -223,17 +199,6 @@ void Factura::afisare() {
 
     cout << boolalpha;
     cout << "\nEste factura emisa? " << this -> emis;
-}
-
-float Factura::mediaGeometrica() {
-    float medie = 1.0;
-
-    if(this -> cantitate > 0 && this -> preturi != NULL){
-        for(unsigned int i = 0; i < this -> cantitate; i++)
-            medie *= this -> preturi[i];
-        return pow(medie, (1/this -> cantitate));
-    } else
-        return 0;
 }
 
 int Factura::getID() {
@@ -422,54 +387,46 @@ Factura::operator double(){
     return this -> cantitate;
 }
 
-FElectronica::FElectronica():Factura() {
+FacturaElectronica::FacturaElectronica():Factura() {
     this -> metoda_plata = "Anonim";
 }
 
-FElectronica::FElectronica(string metoda_plata, int id, string denumire, unsigned int cantitate, float *pret,
-                           bool emis):Factura(id, denumire, cantitate, pret,emis) {
-
+FacturaElectronica::FacturaElectronica(string metoda_plata, int id, string denumire, unsigned int cantitate,
+                                       float *pret, bool emis):Factura(id, denumire, cantitate, pret, emis) {
     if(metoda_plata.length() > 0)
         this -> metoda_plata = metoda_plata;
     else
         this -> metoda_plata = "Anonim";
 }
 
-FElectronica::FElectronica(const FElectronica &copie):Factura(copie) {
-    this -> metoda_plata = copie.metoda_plata;
+FacturaElectronica::FacturaElectronica(const FacturaElectronica &copie):Factura(copie) {
+    if(copie.metoda_plata.length() > 0)
+        this -> metoda_plata = copie.metoda_plata;
+    else
+        this -> metoda_plata = "Anonim";
 }
 
-FElectronica::~FElectronica() {
+ostream &operator<<(ostream &out, FacturaElectronica &fe){
+    out << "\n\n\tOperatorul << pentru subclasa Factura Electronica: ";
+    out << "\nMetoda plata: " << fe.metoda_plata;
+    out << "\nId: " << fe.id;
+    out << "\nDenumire: " << fe.denumire_produs;
+    out << "\nCantitate: " << fe.cantitate;
+    out << "\nPreturile: ";
+    for(unsigned int i = 0; i < fe.cantitate; i++)
+        out << fe.preturi[i] << ", ";
+    out <<boolalpha;
+    out << "\nEste emisa? " << fe.emis;
 
+    return out;
 }
 
-void FElectronica::afisare() {
-    cout << "\n\n\tMetoda de afisare factura electronica";
-    cout << "\nMetoda plata: " << this -> metoda_plata;
-    cout << "\nId: " << this -> id;
-    cout << "\nDenumire: " << this -> denumire_produs;
-    cout << "\nCantitate: " << this -> cantitate;
-    cout << "\nPreturi: ";
-    for(unsigned int i = 0; i < this -> cantitate; i++)
-        cout << this -> preturi[i] << " ";
+FacturaElectronica::~FacturaElectronica() {}
 
-    cout << boolalpha;
-    cout << "\nEste factura emisa? " << this -> emis;
-
-}
-
-FacturaTVA::FacturaTVA():FElectronica() {}
-FacturaTVA::FacturaTVA(string metoda_plata, int id, string denumire,
-                       unsigned int cantitate, float *pret, bool emis):FElectronica(metoda_plata, id, denumire,
-                                                                    cantitate, pret, emis) {}
-FacturaTVA::FacturaTVA(const FacturaTVA &copie):FElectronica(copie){}
-FacturaTVA::~FacturaTVA() {}
-
-void FacturaTVA::calculTVA() {
-    float tva = (19.0 / 100.0);
+void FacturaElectronica::calcul_cu_TVA() {
+    float tva = (19.0 /100);
     if(this -> cantitate > 0 && this -> preturi != NULL && this -> emis){
-        for(unsigned int i = 0; i < this -> cantitate; i++){
+        for(unsigned int i = 0; i < this -> cantitate; i++)
             this -> preturi[i] *= tva;
-        }
     }
 }
