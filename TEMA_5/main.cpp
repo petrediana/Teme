@@ -15,24 +15,29 @@ protected:
 public:
     Factura();
     Factura(int id, string denumire, unsigned int cantitate, float *pret, bool emis);
+    Factura(int id, unsigned int cantitate = 2, bool emis = false);
     Factura(const Factura &copie);
-    ~Factura();
+    virtual ~Factura();
 
     void afisare();
-    //virtual void calcul_cu_TVA() = 0;
 
-    int getID();
-    string getDEN();
-    unsigned int getCANT();
-    float* getPRET();
-    bool getEMIS();
+    virtual void calcul_cu_TVA() = 0;
+    //clasa abstractizata
+
+    int getID()const;
+    string getDEN()const;
+    unsigned int getCANT()const;
+    float* getPRET()const;
+    bool getEMIS()const;
 
     void setDEN(string den);
     void setCANT(unsigned int cant);
     void setPRET(float *pr, int y);
     void setEMIS(bool emis);
 
-    friend istream &operator >>(istream &in, Factura &factura);
+    Factura &operator =(const Factura &factura);
+
+    /*friend istream &operator >>(istream &in, Factura &factura);
     Factura &operator =(const Factura &factura);
     Factura &operator +=(const Factura &factura);
     Factura &operator +(float penalizare);
@@ -49,7 +54,7 @@ public:
     bool operator<=(Factura factura);
     float &operator[](unsigned int index);
     float operator()();
-    explicit operator double();
+    explicit operator double();*/
 };
 
 class FacturaElectronica : public Factura{
@@ -62,13 +67,48 @@ public:
     ~FacturaElectronica();
 
     friend ostream &operator<<(ostream &out, FacturaElectronica &fe);
+    FacturaElectronica &operator=(const FacturaElectronica &copie);
     void calcul_cu_TVA();
+};
+
+class FacturaAchitata : public Factura{
+private:
+    bool achitat;
+public:
+    FacturaAchitata();
+    FacturaAchitata(bool achitat, int id, string denumire, unsigned int cantitate, float *pret, bool emis);
+    FacturaAchitata(const FacturaAchitata &copie);
+    ~FacturaAchitata();
+
+    void calcul_cu_TVA();
+};
+
+//simulare clasa <vector>
+class GestiuneFacturi{
+private:
+    Factura **facturi;
+    int nr_facturi;
+    int size;
+    bool valid;
+public:
+    GestiuneFacturi();
+    GestiuneFacturi(int nrf);
+    GestiuneFacturi(const GestiuneFacturi &copie);
+    /*  constructorul de copiere -> in copie o sa copieze pointerul
+        cand copia e distrusa si da delete pe pointer
+        invalideaza pointerul din obiectul initial!!!!!!!
+     */
+    ~GestiuneFacturi();
+
+    void pushback(Factura *p);
+    void afisare();
+
 };
 
 int main(){
     float pr[] = {1.5, 2.5, 3.5, 4.5, 5.5, 6.5};
     float pr2[] = {7.5, 8.5, 9.5, 10.5};
-
+/*
     Factura f1;
     f1.afisare();
 
@@ -88,9 +128,9 @@ int main(){
     f2.setEMIS(0);
     f2.afisare();
 
-    /*Factura *facturi;
+    Factura *facturi;
     int nrf;
-    float suma = 0;
+    float suma = 1;
     cout << "\n\n\nCate facturi?: ";
     cin >> nrf;
 
@@ -99,10 +139,11 @@ int main(){
         cin >> facturi[i];
 
         for(unsigned int j = 0; j < facturi[i].getCANT(); j++)
-            suma += facturi[i].getPRET()[j];
+            suma *= facturi[i].getPRET()[j];
+        cout << "\nMedia geometrica: " << pow(suma, (1/facturi[i].getCANT()));
     }
-    cout << "\n\nSuma elementelor de tip float: " << suma;
-*/
+
+
     Factura f3;
     f3 = f2;
 
@@ -143,13 +184,37 @@ int main(){
     double cant = (double)f3;
     cout << "\nCantitate: " << cant;
 
+*/
+    //delete facturi;
+
     FacturaElectronica fe1;
     cout << fe1;
 
-    FacturaElectronica fe2("Cu cardul", 10, "Achitare servicii", 4, pr, 1);
+    FacturaElectronica fe2("Cu cardul", 10, "Servicii", 4, pr, 1);
     cout << fe2;
 
-    //delete facturi;
+    fe2.calcul_cu_TVA();
+    cout << "\nPreturile finale cu tva: ";
+    for(unsigned int i = 0; i < fe2.getCANT(); i++)
+        cout << fe2.getPRET()[i] << " ";
+
+    cout << fe2 << endl;
+
+    FacturaAchitata fa1;
+    fa1.calcul_cu_TVA();
+
+    FacturaAchitata fa2(true, 11, "Factura telefonica", 2, pr2, true);
+    fa2.calcul_cu_TVA();
+
+
+    Factura *pf1 = new FacturaElectronica("Cu cardul", 10, "Servicii", 4, pr, 1);
+    Factura *pf2 = new FacturaElectronica("Cu cardul", 11, "Alte Servicii", 3, pr2, 1);
+
+    GestiuneFacturi vf(2); //vector facturi
+    vf.pushback(pf1);
+    vf.pushback(pf2);
+
+    vf.afisare();
     return 0;
 }
 
@@ -172,6 +237,13 @@ Factura::Factura(int id, string denumire, unsigned int cantitate, float *pret, b
     this -> emis = emis;
 }
 
+Factura::Factura(int id, unsigned int cantitate, bool emis):id(id) {
+    this -> cantitate = cantitate;
+    this -> emis = emis;
+    this -> preturi = new float[cantitate];
+    for(unsigned int i = 0; i < cantitate; i++)
+        this ->preturi[i] = 0;
+}
 Factura::Factura(const Factura &copie):id(copie.id) {
     this -> denumire_produs = copie.denumire_produs;
     this -> cantitate = copie.cantitate;
@@ -201,23 +273,23 @@ void Factura::afisare() {
     cout << "\nEste factura emisa? " << this -> emis;
 }
 
-int Factura::getID() {
+int Factura::getID() const{
     return this -> id;
 }
 
-string Factura::getDEN() {
+string Factura::getDEN() const{
     return this -> denumire_produs;
 }
 
-unsigned int Factura::getCANT() {
+unsigned int Factura::getCANT() const{
     return this -> cantitate;
 }
 
-float *Factura::getPRET() {
+float *Factura::getPRET() const{
     return this -> preturi;
 }
 
-bool Factura::getEMIS() {
+bool Factura::getEMIS() const{
     return this -> emis;
 }
 
@@ -243,7 +315,7 @@ void Factura::setEMIS(bool emis) {
     this -> emis = emis;
 }
 
-istream &operator>>(istream &in, Factura &factura){
+/*istream &operator>>(istream &in, Factura &factura){
     cout << "\n\n\tCitire Factura:";
 
     cout << "\nDenumire: ";
@@ -262,7 +334,7 @@ istream &operator>>(istream &in, Factura &factura){
 
     return in;
 }
-
+*/
 Factura &Factura::operator=(const Factura &factura) {
     if(this != &factura){
         if(factura.denumire_produs.length() > 0)
@@ -280,7 +352,7 @@ Factura &Factura::operator=(const Factura &factura) {
     }
     return *this;
 }
-
+/*
 Factura &Factura::operator+=(const Factura &factura){
     if(this -> cantitate == factura.cantitate)
         for(unsigned int i = 0; i < this -> cantitate; i++)
@@ -386,7 +458,7 @@ float Factura::operator()(){
 Factura::operator double(){
     return this -> cantitate;
 }
-
+*/
 FacturaElectronica::FacturaElectronica():Factura() {
     this -> metoda_plata = "Anonim";
 }
@@ -404,6 +476,22 @@ FacturaElectronica::FacturaElectronica(const FacturaElectronica &copie):Factura(
         this -> metoda_plata = copie.metoda_plata;
     else
         this -> metoda_plata = "Anonim";
+}
+
+FacturaElectronica& FacturaElectronica::operator=(const FacturaElectronica &copie) {
+    this -> denumire_produs = copie.getDEN();
+    this -> cantitate = copie.getCANT();
+    this -> emis = copie.getEMIS();
+
+    if(this -> preturi != NULL)
+        delete[] this->preturi;
+
+    this -> preturi = new float[this -> cantitate];
+    if(copie.preturi != NULL)
+        for(unsigned int i = 0 ;i < this -> cantitate; i++)
+            this -> preturi[i] = copie.getPRET()[i];
+
+    return *this;
 }
 
 ostream &operator<<(ostream &out, FacturaElectronica &fe){
@@ -427,6 +515,117 @@ void FacturaElectronica::calcul_cu_TVA() {
     float tva = (19.0 /100);
     if(this -> cantitate > 0 && this -> preturi != NULL && this -> emis){
         for(unsigned int i = 0; i < this -> cantitate; i++)
-            this -> preturi[i] *= tva;
+            this -> preturi[i] += (this -> preturi[i]) * tva;
     }
+}
+
+FacturaAchitata::FacturaAchitata():Factura() {
+    this -> achitat = false;
+}
+
+FacturaAchitata::FacturaAchitata(bool achitat, int id, string denumire, unsigned int cantitate, float *pret,
+                                 bool emis):Factura(id, denumire, cantitate, pret, emis) {
+    this -> achitat = achitat;
+}
+
+FacturaAchitata::FacturaAchitata(const FacturaAchitata &copie):Factura(copie) {
+    this -> achitat = copie.achitat;
+}
+
+FacturaAchitata::~FacturaAchitata(){}
+
+void FacturaAchitata::calcul_cu_TVA() {
+    float tva = (19.0 /100);
+    float suma = 0;
+
+    if(this -> cantitate > 0 && this -> preturi != NULL && this -> emis){
+        for(unsigned int i = 0; i < this -> cantitate; i++)
+            this -> preturi[i] += (this -> preturi[i]) * tva;
+
+        if(this -> achitat){
+            for(unsigned int i = 0; i < this -> cantitate; i++)
+                suma += this -> preturi[i];
+            cout << "\nS-a achitat suma de: " << suma << " lei";
+        }
+        else
+            cout << "\nFactura nu a fost inca achitata.";
+    }
+    else
+        cout << "\nDate invalide pentru calcul";
+}
+
+GestiuneFacturi::GestiuneFacturi() {
+    this -> facturi = NULL;
+    this -> nr_facturi = 0;
+    this -> size = 0;
+    this -> valid = true;
+}
+
+GestiuneFacturi::GestiuneFacturi(int nrf) {
+    this -> valid = true;
+    this -> size = 0;
+
+    if(nrf > 0)
+        this -> nr_facturi = nrf;
+
+    this -> facturi = new Factura*[this -> nr_facturi];
+    //cout << "\n" << this -> nr_facturi;
+}
+
+GestiuneFacturi::~GestiuneFacturi() {
+    if(!(this->valid)){
+        delete this->facturi;
+        return;
+    }
+
+    for(int i = 0; i < this->size; i++){
+        delete this->facturi[i];
+    }
+    delete this->facturi;
+}
+
+GestiuneFacturi::GestiuneFacturi(const GestiuneFacturi &copie) {
+    if(copie.size > 0)
+    this -> size = copie.size;
+
+    if(copie.nr_facturi > 0)
+        this -> nr_facturi = copie.nr_facturi;
+
+    this -> valid = false;
+
+    for(int i = 0 ;i < this -> size; i++){
+        facturi[i] = copie.facturi[i];
+    }
+}
+
+void GestiuneFacturi::pushback(Factura *p) {
+    if(this ->size >= this ->nr_facturi || this ->facturi == NULL)
+        return;
+
+    this->facturi[this->size] = p;
+
+    this -> size++;
+}
+
+void GestiuneFacturi::afisare() {
+    cout << "\n\n\tAfisare vector de facturi:";
+    if(this -> size > 0 && this -> nr_facturi > 0 && this -> facturi != NULL){
+        for(int i = 0; i < size; i++){
+            cout << "\n\tFactura: " << i + 1;
+            cout << "\nId: " << this->facturi[i]->getID();
+            cout << "\nDenumire: " << this->facturi[i]->getDEN();
+            cout << "\nCantitate: " << this->facturi[i]->getCANT();
+            cout << "\nPreturile: ";
+
+            if(this->facturi[i]->getPRET() != NULL) {
+                for (unsigned int j = 0; j < this->facturi[i]->getCANT(); j++)
+                    cout << this->facturi[i]->getPRET()[j] << " ";
+            }
+
+            cout << boolalpha;
+            cout << "\nEste emisa? " << this->facturi[i]->getEMIS();
+        }
+    }
+    else
+        cout << "\nObiectele nu au fost initializate";
 }
